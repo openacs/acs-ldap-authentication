@@ -25,6 +25,7 @@
             <file type="tcl_procs" path="tcl/ldap-procs.tcl"/>
             <file type="documentation" path="www/doc/design.html"/>
             <file type="documentation" path="www/doc/index.html"/>
+            <file type="documentation" path="www/doc/ldap-authentication.html"/>
             <file type="documentation" path="www/doc/requirements.html"/>
             <file type="content_page" path="www/examples/ldap-test.tcl"/>
             <file type="content_page" path="www/examples/user-login.tcl"/>
