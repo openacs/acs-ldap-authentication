@@ -65,7 +65,7 @@ set email_verified_p "t"
 
 if {$exception_count > 0} {
     ad_return_complaint $exception_count $exception_text
-    return
+    ad_script_abort
 }
 
 set double_click_p 0
@@ -77,13 +77,13 @@ if { [db_string user_exists "select count(*) from registered_users where user_id
     set result [ldap_add_user_to_server $dn $first_names $last_name $email $password]
     if [empty_string_p $result] {
         ad_return_error "User Creation Failed" "We were unable to create your user record in the ldap database."
-        return
+        ad_script_abort
     }
     set user_id [ldap_user_new -dn $dn $email $first_names $last_name $password $question \
             $answer $url $email_verified_p $member_state $user_id]
     if { !$user_id } {
 	ad_return_error "User Creation Failed" "We were unable to create your user record in the database."
-        return
+        ad_script_abort
     }
 }
 
