@@ -10,7 +10,7 @@
 
 begin
 
-  acs_attribute.drop_attribute ('acs_object', 'ldap dn');
+  acs_attribute.drop_attribute ('acs_object', 'ldap_dn');
 
   delete from acs_object_type_tables
    where table_name = 'LDAP_ATTRIBUTES';
