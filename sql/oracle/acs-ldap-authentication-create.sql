@@ -26,7 +26,7 @@ begin
 
   attr_id := acs_attribute.create_attribute (
       object_type => 'acs_object',
-      attribute_name => 'ldap dn',
+      attribute_name => 'ldap_dn',
       datatype => 'string',
       pretty_name => 'LDAP Distinguished Name (dn)',
       pretty_plural => 'LDAP Distinguished Names',
