@@ -1,0 +1,261 @@
+import javax.naming.*;
+import javax.naming.directory.*;
+import java.util.Hashtable;
+
+public class LdapLogin {
+
+  private static final String ERROR_PREFIX = "__LDAP_ERROR";
+
+  private static String pretty_error (Exception e) {
+    // Return a nicely formatted error message from the given execption.
+    if (e instanceof IllegalArgumentException) {
+      return ERROR_PREFIX + ": Illegal Argument {"+e.getMessage()+"} {"+e.toString()+"}";
+    } 
+    if (e instanceof NamingException) {
+      return ERROR_PREFIX + ": Naming Exception {"+e.getMessage()+"} {"+e.toString()+"}";
+    } 
+    if (e instanceof ServiceUnavailableException) {
+      return ERROR_PREFIX + ": Service Unavailable  {"+e.getMessage()+"} {"+e.toString()+"}";
+    } 
+    if (e instanceof AuthenticationException) {
+      return ERROR_PREFIX + ": Invalid Authentication {"+e.getMessage()+"} {"+e.toString()+"}";
+    } 
+    return ERROR_PREFIX + ": Unknown Error Type {"+e.getMessage()+"} {"+e.toString()+"}";
+  }
+
+  private static DirContext login (String url, String dn, String password, String security_method) 
+    throws IllegalArgumentException, NamingException {
+
+      // Check arguments
+      if (url == null || url == "") throw new IllegalArgumentException("No url specified");
+      if (dn == null || dn == "") throw new IllegalArgumentException("No dn specified");
+      if (password == null || password == "") throw new IllegalArgumentException("No password specified");
+      if (security_method == null || security_method == "") throw new IllegalArgumentException("No security_method specified");
+      
+      Hashtable env = new Hashtable(11);
+      env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+      env.put(Context.PROVIDER_URL, url);
+      env.put(Context.SECURITY_AUTHENTICATION, security_method);
+      env.put(Context.SECURITY_PRINCIPAL, dn);
+      env.put(Context.SECURITY_CREDENTIALS, password);
+      
+      DirContext ctx = new InitialDirContext(env);
+      return ctx;
+  }
+
+  public static String change_password (String url, String rootdn, String rootpw, 
+                                        String security_method, String dn, String password) {
+
+    DirContext ctx;
+    BasicAttribute new_password;
+    ModificationItem change;
+    ModificationItem[] changes;
+    
+    // Set up attribute stuff for changing the password
+    new_password = new BasicAttribute ("userPassword", password);
+    change = new ModificationItem (DirContext.REPLACE_ATTRIBUTE, new_password);
+    changes = new ModificationItem[1];
+    changes[0] = change;
+
+    try { 
+
+      // Create initial context
+      // This will throw an exception if the binding does not happen.
+      ctx = login (url, rootdn, rootpw, security_method);
+
+      // Make the change
+      // This will throw an error if there's a problem
+      ctx.modifyAttributes(dn, changes);
+      
+      // Close the context when we're done. This may throw an error.
+      ctx.close();
+      
+    } catch (Exception e) {
+      return pretty_error (e);
+    }
+      
+    // success
+    return "1";
+
+  }
+    
+  public static String get_attribute (String url, String rootdn, String rootpw, 
+                                      String security_method, String dn, String attribute) {
+    Attribute attr;
+    DirContext ctx;
+    NamingEnumeration results;
+    Object attr_val;
+    SearchControls sc;
+    SearchResult sr;
+    int count;
+
+    String[] attrIDs = { attribute };
+    sc = new SearchControls (SearchControls.OBJECT_SCOPE, 0, 0, attrIDs, false, false);
+      
+    try { 
+      
+      // Create initial context
+      // This will throw an exception if the binding does not happen.
+      ctx = login (url, rootdn, rootpw, security_method);
+      
+      // Search for objects that have those matching attributes.
+      // This can throw a number of errors.
+      results = ctx.search(dn, "(objectclass=*)", sc);
+      
+      // Loop through results.  
+      count = 0;
+      attr_val = null;
+      while (results.hasMore()) {
+	count++;
+	sr = (SearchResult)results.next();
+	attr = sr.getAttributes().get(attribute);
+	if (attr != null) {
+	  attr_val = attr.get();
+	}
+      }
+
+      // Close the context when we're done
+      ctx.close();
+      
+    } catch (Exception e) {
+      return pretty_error (e);
+    }
+
+    // Check the results. There should be only one match containing one attribute value.
+    if (count == 0) {
+      return pretty_error (new Exception ("no results"));
+    }
+    if (count > 1) {
+      return pretty_error (new Exception ("too many results"));
+    }
+    if (attr_val == null) {
+      return pretty_error (new Exception ("attribute not found"));
+    }
+    
+    // success
+    return attr_val.toString();
+  }
+  
+  public static String get_dn_from_email (String url, String rootdn, String rootpw, 
+                                          String basedn, String security_method, String email) {
+
+    Attributes matchAttrs;
+    DirContext ctx;
+    NamingEnumeration results;
+    SearchResult sr;
+    String dn;
+    int count;
+
+    matchAttrs = new BasicAttributes(true);
+    matchAttrs.put(new BasicAttribute("mail", email));
+    
+    String[] attrIDs = { "dn" };
+
+    try { 
+
+      // Create initial context
+      // This will throw an exception if the binding does not happen.
+      ctx = login (url, rootdn, rootpw, security_method);
+
+      // Search for objects that have those matching attributes
+      results = ctx.search(basedn, matchAttrs, attrIDs);
+
+      count = 0;
+      dn = new String();
+      while (results.hasMore()) {
+	count++;
+	sr = (SearchResult)results.next();
+	sr.setRelative(false);
+	dn = sr.getName();
+      }
+
+      // Close the context when we're done
+      ctx.close();
+
+    } catch (Exception e) {
+      return pretty_error (e);
+    }
+
+    if (count == 0) {
+      return pretty_error (new Exception ("no results"));
+    }
+    if (count > 1) {
+      return pretty_error (new Exception ("too many results"));
+    }
+
+    // success
+    return dn;
+    
+  }
+
+  public static String add_user (String url, String rootdn, String rootpw, String security_method, 
+				 String dn, String first_name, String last_name, String email, String password) {
+    DirContext ctx;
+    Attributes attrs;
+    Attribute objclass;
+    Attribute givenName;
+    Attribute sn;
+    Attribute cn;
+    Attribute mail;
+    Attribute userPassword;
+
+    attrs = new BasicAttributes(true);
+    objclass = new BasicAttribute("objectclass");
+    objclass.add("top");
+    objclass.add("person");
+    objclass.add("organizationalPerson");
+    objclass.add("inetOrgPerson");
+    givenName = new BasicAttribute("givenName");
+    givenName.add(first_name);
+    sn = new BasicAttribute("sn");
+    sn.add(last_name);
+    cn = new BasicAttribute("cn");
+    cn.add(first_name + " " + last_name);
+    mail = new BasicAttribute("mail");
+    mail.add(email);
+    userPassword = new BasicAttribute("userPassword");
+    userPassword.add(password);
+    attrs.put(objclass);
+    attrs.put(givenName);
+    attrs.put(sn);
+    attrs.put(cn);
+    attrs.put(mail);
+    attrs.put(userPassword);
+    
+    try { 
+
+      // Create initial context
+      // This will throw an exception if the binding does not happen.
+      ctx = login (url, rootdn, rootpw, security_method);
+
+      // Create the new entry
+      Context result = ctx.createSubcontext(dn, attrs);
+
+      // Close the contexts when we're done
+      ctx.close();
+      result.close();
+
+    } catch (Exception e) {
+      return pretty_error (e);
+    }
+
+    // success
+    return dn;
+  }
+
+  public static String authenticate (String url, String security_method, String dn, String password) {
+    try { 
+	    
+      // Create initial context
+      // This will throw an exception if the binding does not happen.
+      DirContext ctx = login (url, dn, password, security_method);
+      
+      // Close the context when we're done
+      ctx.close();
+      
+      return "1";
+    } catch (Exception e) {
+      return pretty_error (e);
+    }
+  }
+}

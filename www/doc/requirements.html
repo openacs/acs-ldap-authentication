@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<title>ACS LDAP Authentication Requirements v.1d</title>
+</head>
+
+<body bgcolor=white>
+
+<h2>ACS LDAP Authentication Requirements v.1d</h2>
+
+by <a href="mailto:dennis@arsdigita.com">Dennis Gregorovic</a>
+
+<hr>
+
+<h3>I. Introduction</h3>
+
+The following is a requirements document for the ACS LDAP Authentication package
+version 0.1d.
+
+<p>
+<h3>II. Vision Statement</h3><p>
+
+Often a group of servers running separate ACS installations would like to have a
+single login and account creation mechanism for all of the servers in the group.
+For example, if Joe User creates an account on www.arsdigita.com then he should
+be able to log on to dev.arsdigita.com with the same e-mail address and
+password.  
+
+<h3>III. Use-cases and User-scenarios</h3>
+
+The ACS LDAP Authentication package is intended for use by ACS administrators.
+
+The setup process should be simple.  To use the ACS LDAP Authentication package,
+Jane Admin first installs it.  Then, she configures the parameters for it so
+that it points to the desired LDAP server.  Then she enables the package and the
+LDAP Authentication overrides the default ACS login mechanisms.
+
+<h3>IV. System/Application Overview</h3>
+ACS LDAP Authentication consists of:
+
+<ul>
+  <li><strong>Configuration</strong>
+   <ul>
+     <li>There is at most one instance of an LDAP Authentication package per ACS
+      installation.
+     <li>Each instance requires a set of parameters specifying information about
+      the LDAP server to be used.
+     <li>Sharing authentication between ACS installations is implicitly
+      performed by having the installations share a common LDAP Server setup.
+   </ul>
+      
+  <li><strong>Common Authentication</strong>
+   <ul>
+     <li>If servers A, B, and C are using LDAP Authentication and are setup to
+      share a common LDAP server, then Joe User can log into A, B, or C with the
+      same e-mail address/password pair.
+      </li>
+   </ul>
+   
+  <li><strong>Account Replication</strong>
+   <ul>
+     <li>A user only needs to register on one ACS installation within a
+      group of servers using LDAP Authentication.
+     <li>When the user logs into an installation within the group, a
+      local account will be created for the user if it does not already exist.
+     <li>Each group of servers will contain canonical account information for
+      users including e-mail address, first names, last name, screen name.  This
+      information will be updated locally each time a user logs in.
+   </ul>
+</ul>
+
+<h3>V. Related Links</h3>
+
+<ul>
+  <li> <a href=design.html>Design Document</a>
+  <li> <a href="http://www.arsdigita.com/doc/ldap-authentication">Original Idea</a>
+  <li> Test plan (Not available yet)
+</ul>
+
+<h3>VI.A Requirements: Data Model</h3>
+
+<p>The LDAP Authentication package Data Model should provide the following
+capabilities:</p>
+
+<dl>
+  <dt><b>10.10 Uniquely identify a user</b></dt>
+  <dd><p>There needs to be a way within the data model to uniquely identify a
+   user across multiple machines that still allows them to change their e-mail
+   addresses and screen names.</p></dd>
+</dl>
+
+<h3>VI.B Requirements: API</h3>
+
+<p>The Single Login functionality API should provide the following
+capabilities:</p> 
+
+<dl>
+<dt><b>20.10 Authenticate a user</b></dt>
+
+<dd> <p>Given an email address and a password, the LDAP Authentication package
+ authenticates the password for that email address.  </p> </dd>
+
+<dt><b>20.20 Query a user's existence</b></dt>
+
+<dd> <p>Given an email address, the LDAP Authentication package returns whether a
+user with that email address exists.  </p> </dd>
+
+<dt><b>20.30 Update a user's local info</b></dt>
+
+<dd> <p>The LDAP Authentication package can update a user's local information
+ (email address, screen name, first names, last name) with the information from
+ the canonical source.  </p> </dd>
+
+<dt><b>20.40 Update a user's canonical info</b></dt>
+
+<dd> <p>The LDAP Authentication package can update a user's information
+ (email address, screen name, first names, last name) at the canonical source
+ with the information from the local database.  </p> </dd>
+
+</dl>
+
+<h3>VI.C Requirements: The User Interface</h3>
+
+<p>The Single Login functionality does not have any User Interface requirements.</p> 
+
+<h3>VII. Revision History</h3>
+
+<table cellpadding=2 cellspacing=2 width=90% bgcolor=#efefef>
+<tr bgcolor=#e0e0e0>
+    <th width=10%>Document Revision #</th>
+    <th width=50%>Action Taken, Notes</th>
+    <th>When?</th>
+    <th>By Whom?</th>
+</tr>
+
+<tr>
+   <td>0.1</td>
+   <td>Creation</td>
+   <td>08/30/2000</td>
+   <td>Dennis Gregorovic</td>
+</tr>
+
+<tr>
+   <td>0.2</td>
+   <td>Revised</td>
+   <td>09/11/2000</td>
+   <td>Dennis Gregorovic</td>
+</tr>
+
+</table>
+<hr>
+<address><a href="mailto:dennis@arsdigita.com">dennis@arsdigita.com</a></address>
+<!-- hhmts start -->
+Last modified: Mon Sep 11 11:42:01 2000
+<!-- hhmts end -->
+</body>
+</html>
