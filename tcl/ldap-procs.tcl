@@ -56,7 +56,7 @@ ad_proc -public ldap_get_dn_from_email { email } {
     exactly one entry that matches, then it returns the DN of that entry.  Otherwise
     it returns the empty string.
 } {
-    ns_log debug "LDAP_GET_DN_FROM_EMAIL $email"
+    ns_log debug "ldap_get_dn_from_email: $email"
 
     # Set the LDAP environment variables
     util_unlist [ldap_set_environment] url rootdn rootpw basedn security_method
@@ -75,7 +75,7 @@ ad_proc -public ldap_get_dn_from_email { email } {
     
     if ![ldap_valid_value_p $dn] {
         # There was a problem with the query
-        ns_log Notice "ldap_get_dn_from_email: $dn"
+        ns_log Notice "ldap_get_dn_from_email: invalid value $dn"
         return ""
     }
 
@@ -357,7 +357,7 @@ ad_proc -private ldap_add_object { object_id dn } {
               (:object_id, :dn)
         }
     } errmsg] {
-        ns_log warning "Failed on insert into ldap_attributes for object $object_id with dn $dn: $errmsg"
+        ns_log warning "ldap_set_environment: Failed on insert into ldap_attributes for object $object_id with dn $dn: $errmsg"
         return 0
     }
     
