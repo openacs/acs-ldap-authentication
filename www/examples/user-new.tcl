@@ -40,8 +40,8 @@ db_release_unused_handles
 set header [ad_header "Register"]
 set system_name [ad_system_name]
 set export_vars [export_form_vars email return_url user_id]
-set no_require_password_p [ad_parameter RegistrationProvidesRandomPasswordP security 0]
-set require_question_p [ad_parameter UseCustomQuestionForPasswordReset security 1]
+set no_require_password_p [parameter::get -parameter RegistrationProvidesRandomPasswordP -default 0]
+set require_question_p    [parameter::get -parameter UseCustomQuestionForPasswordReset -default 1]
 set footer [ad_footer]
 
 ad_return_template

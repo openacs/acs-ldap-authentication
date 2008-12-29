@@ -47,7 +47,7 @@ if { [info exists url] && [string compare $url "http://"] == 0 } {
     append exception_text "<li>You URL doesn't have the correct form.  A valid URL would be something like \"http://photo.net/philg/\"."
 }
 
-if {[ad_parameter RegistrationProvidesRandomPasswordP security 0]} {
+if {[parameter::get -parameter RegistrationProvidesRandomPasswordP -default 0]} {
     set password [ad_generate_random_string]
 } elseif { ![info exists password] || [empty_string_p $password] } {
     incr exception_count
