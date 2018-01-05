@@ -9,7 +9,7 @@ as a user of <a href="index">@system_name@</a>
 <form method=post action="user-new-2">
 @export_vars;noquote@
 
-<if @no_require_password_p@ eq 0>
+<if @no_require_password_p;literal@ false>
 
   <h3>Security</h3>
 
@@ -46,7 +46,7 @@ name to generate certain kinds of user interface.
 Full Name:    <input type=text name=first_names size=20> <input type=text name=last_name size=25>
 <p>
 
-<if @require_question_p@ eq 1>
+<if @require_question_p;literal@ true>
 
   We also need a customized question and answer to reset your password if you forget.
 
