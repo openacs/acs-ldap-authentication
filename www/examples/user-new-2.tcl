@@ -93,3 +93,5 @@ if { [ad_check_password $user_id $password] } {
 }
 
 ad_returnredirect $return_url
+ad_script_abort
+
