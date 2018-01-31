@@ -182,7 +182,7 @@ supplied. It'll use the security mechanism specified in the server
 parameter file.
 
 
-Returns <code>ok</code> if the bind was successfull. If not, it
+Returns <code>ok</code> if the bind was successful. If not, it
 returns <code>Error: <i>explanation</i></code>
 
 <p>
@@ -222,7 +222,7 @@ section, the rest in the LDAP section:
 <b>ServerURL=<i>ldap://ldap.yourdomain.com</i></b>
 ; The base DN under which all the users of this website resides
 <b>BaseDN=<i>ou=people,dc=yourdomain,dc=com</i></b>
-; Preferred security mechanisms seperated by space, e.g.
+; Preferred security mechanisms separated by space, e.g.
 ; simple, CRAM-MD5, DIGEST-MD5
 <b>SecurityMechanism=<i>simple</i></b>
 </pre></blockquote>
@@ -250,8 +250,8 @@ the Java procs in <code>/packages/acs-core/ldap-procs.tcl</code>.
 
 <h4>Patched /www/register Pages</h4>
 
-The login process has been modified to accomodate LDAP
-authenticaion. The following pages are affected: user-login,
+The login process has been modified to accommodate LDAP
+authentication. The following pages are affected: user-login,
 user-login-2, deleted-user, restore-user.
 
 

@@ -7,7 +7,7 @@ public class LdapLogin {
   private static final String ERROR_PREFIX = "__LDAP_ERROR";
 
   private static String pretty_error (Exception e) {
-    // Return a nicely formatted error message from the given execption.
+    // Return a nicely formatted error message from the given exception.
     if (e instanceof IllegalArgumentException) {
       return ERROR_PREFIX + ": Illegal Argument {"+e.getMessage()+"} {"+e.toString()+"}";
     } 

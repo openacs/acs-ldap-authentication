@@ -334,7 +334,7 @@ ad_proc -public ldap_get_attribute { dn attribute } {
 }
         
 ad_proc -private ldap_set_environment {} {
-    A convenience function for setting up common local variables from LDAP Package paramter
+    A convenience function for setting up common local variables from LDAP Package parameter
     values.
 } {
     set url             [default_parameter_value LdapUrl acs-ldap-authentication]
