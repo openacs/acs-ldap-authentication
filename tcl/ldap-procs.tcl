@@ -11,7 +11,7 @@ ad_library {
 
 # The following two are temporary
 ad_proc default_parameter_value {
-    parameter_name package_key 
+    parameter_name package_key
 } {
     return [db_string parameter_value {
         select default_value
@@ -33,18 +33,18 @@ ad_proc set_default_parameter_value {
 }
 
 ad_proc -public ldap_user_exists { email } {
-    Checks to see if a user with the given email address exists in either the local 
+    Checks to see if a user with the given email address exists in either the local
     database or on the LDAP server.  Returns 1 if the user exists, 0 otherwise.
 } {
     # check to see if the user is in the local cc_users table
     set user_id [cc_email_user $email]
-    if ![empty_string_p $user_id] {
+    if { $user_id ne "" } {
         # user is in local database
         return 1
     }
     # check the LDAP server
     set dn [ldap_get_dn_from_email $email]
-    if ![empty_string_p $dn] {
+    if { $dn ne "" } {
         # user is on LDAP server
         return 1
     }
@@ -64,15 +64,15 @@ ad_proc -public ldap_get_dn_from_email { email } {
     set dn [db_exec_plsql get_dn_from_email {
         begin
         :1 := acs_ldap.get_dn_from_email(
-            url => :url, 
-            rootdn => :rootdn, 
-            rootpw => :rootpw, 
-            basedn => :basedn, 
-            security_method => :security_method, 
+            url => :url,
+            rootdn => :rootdn,
+            rootpw => :rootpw,
+            basedn => :basedn,
+            security_method => :security_method,
             email => :email);
         end;
     }]
-    
+
     if ![ldap_valid_value_p $dn] {
         # There was a problem with the query
         ns_log Notice "ldap_get_dn_from_email: invalid value $dn"
@@ -81,15 +81,15 @@ ad_proc -public ldap_get_dn_from_email { email } {
 
     # Relative DNs are returned from the LDAP call.  If a basedn is
     # supplied, append it now to set the full DN.
-    if ![empty_string_p $basedn] {
+    if { $basedn ne "" } {
         set dn "$dn, $basedn"
-    } 
+    }
 
     return $dn
 }
 
-ad_proc -public ldap_check_password { email password_from_form } { 
-    Returns the user's user_id if the password is correct for the given email. 
+ad_proc -public ldap_check_password { email password_from_form } {
+    Returns the user's user_id if the password is correct for the given email.
     Returns the empty_string otherwise.  If the password is correct, it also updates
     the user's local information from the LDAP server.
 } {
@@ -99,7 +99,7 @@ ad_proc -public ldap_check_password { email password_from_form } {
     # Get the dn for the password
     set dn [ldap_get_dn_from_email $email]
 
-    if [empty_string_p $dn] {
+    if { $dn eq "" } {
         # No user with the email address given is on the LDAP server
         return ""
     }
@@ -112,9 +112,9 @@ ad_proc -public ldap_check_password { email password_from_form } {
     if ![db_exec_plsql password_validate {
         begin
         :1 := acs_ldap.authenticate (
-            url => :url, 
-            security_method => :security_method, 
-            dn => :dn, 
+            url => :url,
+            security_method => :security_method,
+            dn => :dn,
             password => :password);
         end;
     }] {
@@ -123,7 +123,7 @@ ad_proc -public ldap_check_password { email password_from_form } {
 
     # check to see if the user is in the local cc_users table
     set user_id [cc_email_user $email]
-    if [empty_string_p $user_id] {
+    if { $user_id eq "" } {
         # insert user into local database
         set user_id [ldap_add_user_from_dn $dn]
 
@@ -141,7 +141,7 @@ ad_proc -public ldap_check_password { email password_from_form } {
     return $user_id
 }
 
-ad_proc -public ldap_change_password { dn password_from_form } { 
+ad_proc -public ldap_change_password { dn password_from_form } {
     Change the user's password on the LDAP server.  Return 1 if successful,
     0 otherwise.
 } {
@@ -157,15 +157,15 @@ ad_proc -public ldap_change_password { dn password_from_form } {
     if ![db_exec_plsql password_update {
         begin
         :1 := acs_ldap.change_password (
-            url => :url, 
-            rootdn => :rootdn, 
-            rootpw => :rootpw, 
-            security_method => :security_method, 
-            dn => :dn, 
+            url => :url,
+            rootdn => :rootdn,
+            rootpw => :rootpw,
+            security_method => :security_method,
+            dn => :dn,
             password => :password);
         end;
     } ] {
-        return 0 
+        return 0
     }
 
     set user_id [db_string user_id_select {
@@ -174,7 +174,7 @@ ad_proc -public ldap_change_password { dn password_from_form } {
          where dn = :dn
     } -default ""]
 
-    if ![empty_string_p $user_id] {
+    if { $user_id ne "" } {
         # Keep local password in sync
         ad_change_password $user_id $password_from_form
     }
@@ -182,13 +182,13 @@ ad_proc -public ldap_change_password { dn password_from_form } {
     return 1
 }
 
-ad_proc -public ldap_user_new { 
+ad_proc -public ldap_user_new {
     { -dn "" }
-    email first_names last_name password password_question password_answer  
-    {url ""} {email_verified_p "t"} {member_state "approved"} {user_id ""} 
+    email first_names last_name password password_question password_answer
+    {url ""} {email_verified_p "t"} {member_state "approved"} {user_id ""}
 } {
     Creates a new user locally.  Then associates this user with the
-    given dn if one is supplied or with a newly created dn otherwise.  
+    given dn if one is supplied or with a newly created dn otherwise.
     Returns the user_id upon success or the empty_string upon failure.
 } {
     ns_log debug "LDAP_USER_NEW $dn $email $first_names $last_name"
@@ -197,26 +197,26 @@ ad_proc -public ldap_user_new {
             $password $password_question $password_answer $url \
             $email_verified_p $member_state $user_id]
 
-    if !$user_id { 
+    if !$user_id {
         # We could not create the user locally so exit.
-        return "" 
+        return ""
     }
 
-    if [empty_string_p $dn] {
+    if { $dn eq "" } {
         # No dn was supplied so we need to create one
         set dn [ldap_make_dn $user_id]
     }
 
-    if ![ldap_add_object $user_id $dn] { 
-        # We could not associate the dn with the user 
-        return 0 
+    if ![ldap_add_object $user_id $dn] {
+        # We could not associate the dn with the user
+        return 0
     }
 
     return $user_id
 }
 
 ad_proc ldap_add_user_to_server { dn first_names last_name email password } {
-    Add an entry to the LDAP server for the given dn and populate it with 
+    Add an entry to the LDAP server for the given dn and populate it with
     the infor from the other arguments.  Return 1 upon success or 0 otherwise.
 } {
     ns_log debug "LDAP_ADD_USER_TO_SERVER $dn $first_names $last_name $email $password"
@@ -227,14 +227,14 @@ ad_proc ldap_add_user_to_server { dn first_names last_name email password } {
     set dn [db_exec_plsql user_add {
         begin
         :1 := acs_ldap.add_user (
-            url => :url, 
-            rootdn => :rootdn, 
-            rootpw => :rootpw, 
-            security_method => :security_method, 
-            dn => :dn, 
-            first_names => :first_names, 
-            last_name => :last_name, 
-            email => :email, 
+            url => :url,
+            rootdn => :rootdn,
+            rootpw => :rootpw,
+            security_method => :security_method,
+            dn => :dn,
+            first_names => :first_names,
+            last_name => :last_name,
+            email => :email,
             password => :password);
         end;
     } ]
@@ -267,7 +267,7 @@ ad_proc -private ldap_sync_user_from_dn { dn } {
                 db_dml party_info_update {
                     update parties
                        set email = :email
-                     where party_id = (select object_id 
+                     where party_id = (select object_id
                                          from ldap_attributes
                                         where dn = :dn)
                 }
@@ -275,7 +275,7 @@ ad_proc -private ldap_sync_user_from_dn { dn } {
                     update persons
                        set first_names = :first_names,
                            last_name = :last_name
-                     where person_id = (select object_id 
+                     where person_id = (select object_id
                                          from ldap_attributes
                                         where dn = :dn)
                 }
@@ -314,7 +314,7 @@ ad_proc -private ldap_add_user_from_dn { dn } {
 }
 
 ad_proc -public ldap_get_attribute { dn attribute } {
-    Queries the LDAP server for the value of the given attribute  in the entry designated 
+    Queries the LDAP server for the value of the given attribute  in the entry designated
     by the DN.
 } {
     # Set the LDAP environment variables
@@ -323,16 +323,16 @@ ad_proc -public ldap_get_attribute { dn attribute } {
     return [db_exec_plsql attribute_fetch {
         begin
         :1 := acs_ldap.get_attribute (
-                   url => :url, 
-                   rootdn => :rootdn, 
-                   rootpw => :rootpw, 
-                   security_method => :security_method, 
-                   dn => :dn, 
+                   url => :url,
+                   rootdn => :rootdn,
+                   rootpw => :rootpw,
+                   security_method => :security_method,
+                   dn => :dn,
                    attribute => :attribute);
         end;
     }]
 }
-        
+
 ad_proc -private ldap_set_environment {} {
     A convenience function for setting up common local variables from LDAP Package parameter
     values.
@@ -360,7 +360,7 @@ ad_proc -private ldap_add_object { object_id dn } {
         ns_log warning "ldap_set_environment: Failed on insert into ldap_attributes for object $object_id with dn $dn: $errmsg"
         return 0
     }
-    
+
     return 1
 }
 

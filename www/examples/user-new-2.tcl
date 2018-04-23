@@ -49,7 +49,7 @@ if { [info exists url] && [string compare $url "http://"] == 0 } {
 
 if {[parameter::get -parameter RegistrationProvidesRandomPasswordP -default 0]} {
     set password [ad_generate_random_string]
-} elseif { ![info exists password] || [empty_string_p $password] } {
+} elseif { ![info exists password] || $password eq "" } {
     incr exception_count
     append exception_text "<li>You haven't provided a password.\n"
 } elseif { [string compare $password $password_confirmation] } {
@@ -75,14 +75,14 @@ if { [db_string user_exists "select count(*) from registered_users where user_id
 } else {
     set dn [ldap_make_dn $user_id]
     set result [ldap_add_user_to_server $dn $first_names $last_name $email $password]
-    if [empty_string_p $result] {
+    if { $result eq "" } {
         ad_return_error "User Creation Failed" "We were unable to create your user record in the ldap database."
         ad_script_abort
     }
     set user_id [ldap_user_new -dn $dn $email $first_names $last_name $password $question \
             $answer $url $email_verified_p $member_state $user_id]
     if { !$user_id } {
-	ad_return_error "User Creation Failed" "We were unable to create your user record in the database."
+        ad_return_error "User Creation Failed" "We were unable to create your user record in the database."
         ad_script_abort
     }
 }

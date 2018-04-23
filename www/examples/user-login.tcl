@@ -19,7 +19,7 @@ if ![ldap_user_exists $email] {
 }
 
 set user_id [ldap_check_password $email $password]
-if [empty_string_p $user_id] {
+if { $user_id eq "" } {
     # The user is in the database, but has provided an incorrect password.
     ad_returnredirect "bad-password?user_id=$user_id"
     ad_script_abort
