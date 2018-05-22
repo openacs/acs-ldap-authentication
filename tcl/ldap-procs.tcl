@@ -367,13 +367,13 @@ ad_proc -private ldap_add_object { object_id dn } {
 ad_proc -private ldap_valid_value_p { value } {
     Checks that the value is not an LDAP error string
 } {
-    return [expr [string first "__LDAP_ERROR" $value] != 0]
+    return [expr {[string first "__LDAP_ERROR" $value] != 0}]
 }
 
 ad_proc -private ldap_valid_and_not_empty_p { value } {
     Checks that the value is not empty or an LDAP error string
 } {
-    return [expr ![empty_string_p $value] && [ldap_valid_value_p $value]]
+    return [expr {$value ne "" && [ldap_valid_value_p $value]}]
 }
 
 ad_proc -private ldap_make_dn { object_id } {
